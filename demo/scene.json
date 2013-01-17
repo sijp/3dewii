@@ -1,0 +1,16 @@
+{
+	"cubeProjection":"sunset",
+	"widgets":[
+		{
+			"name":"StreamWidget",
+			"position": {"x":0,"y":500,"z":50}
+			
+		},
+		{
+			"name":"DummyWidget",
+			"model":"spaceship.js",
+			"position": {"x":0,"y":700,"z":50}
+			
+		}
+	]
+}

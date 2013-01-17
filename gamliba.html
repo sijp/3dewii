@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - draggable cubes</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+			
+			.HoverableText{
+				display:none;
+				width:180px;
+				height:80px;
+				border:solid 1px #EFEFFF;
+				background:url("./reflex2.png");
+				background-color:#6B89B8;
+				color:#F0F3FF;
+				text-shadow: 0.1em 0.1em #333;
+				margin-left:40px;
+				margin-top:-40px;
+				opacity:0.8;
+				
+				-webkit-border-radius: 5px;
+				-moz-border-radius: 5px;
+				border-radius: 5px;
+				
+				padding: 5px;
+				font-size:14px;
+				background-attachment: fixed;
+				
+			}
+		</style>
+	</head>
+	<body>
+
+
+	<script src="Three.js"></script>
+		<script src="optimer_bold.js"></script>
+		<script src="optimer_regular.js"></script>
+		<script>
+
+			var container;
+			var camera, controls, scene, projector, renderer;
+			var objects = [], plane;
+			var text;
+			
+			var mouse = new THREE.Vector2(),
+			offset = new THREE.Vector3(),
+			INTERSECTED, SELECTED;
+
+			init();
+			animate();
+			
+			function toScreenXY(position, camera, canvas) {
+			  var pos = position.clone();
+			  var projScreenMat = new THREE.Matrix4();
+			  projScreenMat.multiply(camera.projectionMatrix, camera.matrixWorldInverse);
+			  projScreenMat.multiplyVector3( pos );
+
+			  return { x: ( pos.x + 1 ) * canvas.width / 2 + canvas.offsetLeft,
+			      y: ( - pos.y + 1) * canvas.height / 2 + canvas.offsetTop };
+			}
+			
+			function loadMessages(textObj,stringArray,i)
+			{
+				//textObj.
+			}
+			
+			function facebookify(obj)
+			{
+			
+				console.log("oh hai");
+				var textGeo=new THREE.TextGeometry("Hello World",{
+
+					size: 1,
+					height: 0,
+					curveSegments: 4,
+
+					font: "optimer",
+					weight: "normal",
+					style: "normal",
+
+					bevelThickness: 2,
+					bevelSize: 1.5,
+					bevelEnabled: false,
+
+					bend: false,
+
+					material: 0,
+					extrudeMaterial: 1
+
+				});
+				console.log("kthxbye");
+				textMesh1 = new THREE.Mesh( textGeo, new THREE.MeshBasicMaterial() );
+				
+				textMesh1.position.x = 2;
+				/*textMesh1.position.y = obj.position.y;
+				textMesh1.position.z = obj.position.z;
+				*/
+				obj.add(textMesh1);
+				
+				//scene.add(textMesh1);
+			
+			}
+			
+			function setupSky()
+			{
+				var urlPrefix = "cubeprojection/";
+				var urls = [ urlPrefix + "3.jpg", urlPrefix + "1.jpg",
+				urlPrefix + "5.jpg", urlPrefix + "6.jpg",
+				urlPrefix + "4.jpg", urlPrefix + "2.jpg" ];
+				var textureCube = THREE.ImageUtils.loadTextureCube( urls ); 
+				textureCube.format = THREE.RGBFormat;
+				
+				var shader = THREE.ShaderUtils.lib[ "cube" ];
+				shader.uniforms[ "tCube" ].texture = textureCube;
+				
+				var material = new THREE.ShaderMaterial( {
+
+				  fragmentShader: shader.fragmentShader,
+				  vertexShader: shader.vertexShader,
+				  uniforms: shader.uniforms,
+				  depthWrite: false
+
+				});
+				
+				// build the skybox Mesh
+				skyboxMesh =  new THREE.Mesh( new THREE.CubeGeometry( 10000, 10000, 10000 ), material );
+				skyboxMesh.flipSided = true;
+				
+				skyboxMesh.rotation.y=Math.PI;
+				
+				// add it to the scene
+				return skyboxMesh;
+				
+				
+			}
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+				
+				text = document.createElement( 'div' );
+				text.style.position = 'absolute';
+				text.innerHTML = 'Oh hai!';
+				text.className = "HoverableText";
+				document.body.appendChild( text );
+				
+				
+
+				camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 4200;
+				camera.position.y = 350;
+				
+				camera.rotation.x = Math.PI/180;
+
+				
+
+				scene = new THREE.Scene();
+				scene.add(camera);
+				
+				scene.add(setupSky());
+
+				scene.add( new THREE.AmbientLight( 0x606060 ) );
+
+				var light = new THREE.SpotLight( 0xffffff, 1.5 );
+				light.position.set( 0, 0, 2000 );
+				light.castShadow = true;
+
+				light.shadowCameraNear = 200;
+				light.shadowCameraFar = camera.far;
+				light.shadowCameraFov = 50;
+
+				light.shadowBias = -0.00022;
+				light.shadowDarkness = 0.5;
+
+				light.shadowMapWidth = 2048;
+				light.shadowMapHeight = 2048;
+
+				scene.add( light );
+				
+				var dirLight = new THREE.DirectionalLight( 0xffffff, 0.6 );
+				dirLight.position.set( 0, 0, 2000 ).normalize();
+				scene.add( dirLight );
+				
+				var jsonLoader = new THREE.JSONLoader();
+				jsonLoader.load( "spacescene2.js", function( geometry ) { createScene( geometry) } );
+				jsonLoader.load( "facebook.js", function( geometry ) { addInteractiveObject( geometry ,
+					function (obj)
+					{
+
+						text.style.display = "none";
+					},
+					function (obj)
+					{
+
+						text.style.display = "block";
+						coord = toScreenXY(obj.position,camera,renderer.domElement);
+
+						text.style.left = coord.x + 'px';
+						text.style.top = coord.y + 'px';				
+					}
+					
+				); } );
+				
+				jsonLoader.load( "spaceship.js", function( geometry ) { addInteractiveObject( geometry);});
+				jsonLoader.load( "spaceship.js", function( geometry ) { addInteractiveObject( geometry);});
+
+				/*jsonLoader.load( "spaceship.js", function( geometry ) { createScene( geometry ,false) } );
+				jsonLoader.load( "paperscroll.js", function( geometry ) { createScene( geometry ,true) } );*/
+				//jsonLoader.load( "Mech2011.simple.js", function( geometry ) { createScene( geometry ) } );
+
+				var geometry = new THREE.CubeGeometry( 40, 40, 40 );
+
+				/*for ( var i = 0; i < 200; i ++ ) {
+
+					var object = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff } ) );
+
+					//object.material.ambient = object.material.color;
+
+					object.position.x = Math.random() * 1000 - 500;
+					object.position.y = Math.random() * 600 - 300;
+					object.position.z = Math.random() * 800 - 400;
+
+					object.rotation.x = ( Math.random() * 360 ) * Math.PI / 180;
+					object.rotation.y = ( Math.random() * 360 ) * Math.PI / 180;
+					object.rotation.z = ( Math.random() * 360 ) * Math.PI / 180;
+
+					object.scale.x = Math.random() * 2 + 1;
+					object.scale.y = Math.random() * 2 + 1;
+					object.scale.z = Math.random() * 2 + 1;
+
+					object.castShadow = true;
+					object.receiveShadow = true;
+
+					scene.add( object );
+
+					objects.push( object );
+
+				}*/
+
+				plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
+				plane.visible = false;
+				plane.rotation.x = Math.PI/2;
+				scene.add( plane );
+
+				projector = new THREE.Projector();
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.sortObjects = false;
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				renderer.shadowMapEnabled = true;
+				renderer.shadowMapSoft = true;
+
+				container.appendChild( renderer.domElement );
+
+
+
+				/*stats = new Stats();
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.top = '0px';
+				container.appendChild( stats.domElement );*/
+
+				renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+				renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+			
+			function getText( id ) {
+				return document.getElementById( id ).textContent;
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				event.preventDefault();
+
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				//
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+
+				if ( SELECTED ) {
+
+					var intersects = ray.intersectObject( plane );
+					SELECTED.downFunction(SELECTED);
+					SELECTED.position.copy( intersects[ 0 ].point.subSelf( offset ) );
+					
+					SELECTED.lookAt( new THREE.Vector3 (0,350,4200) );
+					plane.position.copy( SELECTED.position );
+					/*plane.lookAt( camera.position );
+					plane.rotation.x += Math.PI/2;*/
+					return;
+
+				}
+
+
+				var intersects = ray.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+					if ( INTERSECTED != intersects[ 0 ].object ) {
+
+						//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+						INTERSECTED = intersects[ 0 ].object;
+						//INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+
+						plane.position.copy( INTERSECTED.position );
+						/*plane.lookAt( camera.position );
+						plane.rotation.x += Math.PI/2;*/
+						
+
+					}
+
+					container.style.cursor = 'pointer';
+
+				} else {
+
+					//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+
+					INTERSECTED = null;
+
+					container.style.cursor = 'auto';
+
+				}
+
+			}
+
+			function onDocumentMouseDown( event ) {
+
+				event.preventDefault();
+
+				var vector = new THREE.Vector3( mouse.x, mouse.y, 0.5 );
+				projector.unprojectVector( vector, camera );
+
+				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+				var intersects = ray.intersectObjects( objects );
+
+				if ( intersects.length > 0 ) {
+
+//					controls.enabled = false;
+
+					SELECTED = intersects[ 0 ].object;
+					SELECTED.downFunction(SELECTED);
+
+					var intersects = ray.intersectObject( plane );
+					offset.copy( intersects[ 0 ].point ).subSelf( plane.position );
+
+					container.style.cursor = 'move';
+
+				}
+
+			}
+
+			function onDocumentMouseUp( event ) {
+
+				event.preventDefault();
+
+				//controls.enabled = true;
+
+				if ( INTERSECTED ) {
+
+					plane.position.copy( INTERSECTED.position );
+					if (SELECTED)
+						SELECTED.upFunction(SELECTED);
+					SELECTED = null;
+
+				}
+
+				container.style.cursor = 'auto';
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+//				stats.update();
+
+			}
+
+			function render() {
+
+//				controls.update();
+
+				renderer.render( scene, camera );
+
+			}
+
+			function createScene(geo)
+			{
+				object=new THREE.Mesh( geo, new THREE.MeshFaceMaterial({shading:THREE.FlatShading}) );
+
+				object.geometry.dynamic = true;
+
+				object.castShadow = true;
+				object.receiveShadow = true;
+				
+				object.position.x = 100;
+				object.position.y = -400;
+				object.position.z = 0;
+				
+				object.scale.x=80;
+				object.scale.y=80;
+				object.scale.z=80;
+				
+				//object.rotation.y=-Math.PI/2;
+				
+				
+
+				scene.add( object );
+				
+				render();
+			}
+
+
+			function addInteractiveObject (geo, downF , upF)
+		        {
+			    	console.log(geo);
+			    	object=new THREE.Mesh( geo, new THREE.MeshFaceMaterial({shading:THREE.FlatShading}) );
+
+				object.geometry.dynamic = true;
+	
+	
+
+					object.position.x = Math.random() * 1000 - 500;
+					object.position.y = Math.random() * 600 - 300;
+					object.position.z = Math.random() * 800 - 1000;
+
+					/*object.rotation.x = ( Math.random() * 360 ) * Math.PI / 180;
+					object.rotation.y = ( Math.random() * 360 ) * Math.PI / 180;
+					object.rotation.z = ( Math.random() * 360 ) * Math.PI / 180;*/
+
+					object.scale.x = Math.random() * 10 + 60;
+					object.scale.y = Math.random() * 10 + 60;
+					object.scale.z = Math.random() * 10 + 60;
+
+				object.castShadow = true;
+				object.receiveShadow = true;
+				
+
+
+				scene.add( object );
+				objects.push(object);
+				
+				if (downF==null)
+					downF=function(){};
+				if (upF==null)
+					upF=function(){};
+				object.downFunction = downF;
+				object.upFunction   = upF;
+				
+				render();
+		        }
+
+		</script>
+
+	</body>
+</html>
+
