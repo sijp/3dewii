@@ -40,7 +40,7 @@ demo directory:
 base.js:
 -------------------------------------------------------------------------------------------------
 This is the core functionallity of the user interface. It provieds 3 basic objects:
-	* Ewii3D - this is a singleton object, whose all purpose is to manage and load
+* Ewii3D - this is a singleton object, whose all purpose is to manage and load
 	  the various 3D components. It sets up the 3D scene, using Three.js, and then
 	  adds all needed elements: a Camera, lights, the environemt Cube, and an
 	  helper plane for moving objects.
@@ -48,15 +48,15 @@ This is the core functionallity of the user interface. It provieds 3 basic objec
 	  implements 3 event handlers: mousemove, mousedown and mouseup, which will move objects that 
 	  are in that array.
 	  It also implements a windowresize handler for refreshing the scene.
-	* Ewii3DWidget - This is an object that defines the basic actions needed for every widget.
+* Ewii3DWidget - This is an object that defines the basic actions needed for every widget.
 	  it has a load method, that loads a json file (specified by the 'model' attribute) and upon
 	  success calls the init method that can be overriden by other widgets.
 	  Widgets that extend this object's functionallity will not be moveable.
-	* Ewii3DMoveableWidget - This is a simple extension to Ewii3DWidget, only that it adds its
+* Ewii3DMoveableWidget - This is a simple extension to Ewii3DWidget, only that it adds its
 	  3D model to the objects array of the Ewii3D singleton, thus allowing it to accept mouse 
 	  events and moved around.
 
-	*** for more info please see the code.
+- for more info please see the code.
 	
 Exporting Three.js models from blender
 -------------------------------------------------------------------------------------------------
