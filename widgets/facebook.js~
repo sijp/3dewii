@@ -7,14 +7,14 @@
 function FacebookWidget(opts)
 {
 	//super call
-	Ewii3DGrabbableWidget.call(this);
+	GamlibaGrabbableWidget.call(this);
 	
 }
 
 /*
- *  This widget supports interaction, so inheritance to Ewii3DGrabbableWidget is made.
+ *  This widget supports interaction, so inheritance to GamlibaGrabbableWidget is made.
  */
-FacebookWidget.prototype = new Ewii3DGrabbableWidget();
+FacebookWidget.prototype = new GamlibaGrabbableWidget();
 
 
 /*
@@ -32,7 +32,7 @@ FacebookWidget.prototype.model="facebook.js";
 FacebookWidget.prototype.init = function(geometry)
 {
 	console.log("FACEBOOKKKKK");
-	Ewii3DGrabbableWidget.prototype.init.call(this,geometry);
+	GamlibaGrabbableWidget.prototype.init.call(this,geometry);
 
 
 	this.text = document.createElement( 'div' );
@@ -41,7 +41,7 @@ FacebookWidget.prototype.init = function(geometry)
 	this.text.className = "HoverableText";
 
 	this.text.style.display = "block";
-	coord = toScreenXY(this.object.position,Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	coord = toScreenXY(this.object.position,Gamliba.getInstance().camera,Gamliba.getInstance().renderer.domElement);
 
 	this.text.style.left = coord.x + 'px';
 	this.text.style.top = coord.y + 'px';
@@ -79,7 +79,7 @@ FacebookWidget.prototype.startLongPolling = function(self)
 FacebookWidget.prototype.clickAction = function()
 {
 	this.text.style.display = "block";
-	coord = toScreenXY(this.object.position,Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	coord = toScreenXY(this.object.position,Gamliba.getInstance().camera,Gamliba.getInstance().renderer.domElement);
 
 	this.text.style.left = coord.x + 'px';
 	this.text.style.top = coord.y + 'px';

@@ -7,14 +7,14 @@
 function ConversationsWidget(opts)
 {
 	//super call
-	Ewii3DGrabbableWidget.call(this);
+	GamlibaGrabbableWidget.call(this);
 	
 }
 
 /*
- *  This widget supports interaction, so inheritance to Ewii3DGrabbableWidget is made.
+ *  This widget supports interaction, so inheritance to GamlibaGrabbableWidget is made.
  */
-ConversationsWidget.prototype = new Ewii3DGrabbableWidget();
+ConversationsWidget.prototype = new GamlibaGrabbableWidget();
 
 
 /*
@@ -31,7 +31,7 @@ ConversationsWidget.prototype.model="streamPod.js";
 
 ConversationsWidget.prototype.init = function(geometry)
 {
-	Ewii3DGrabbableWidget.prototype.init.call(this,geometry);
+	GamlibaGrabbableWidget.prototype.init.call(this,geometry);
 
 	this.object.geometry.computeBoundingBox();
 	boundingbox = this.object.geometry.boundingBox;
@@ -48,7 +48,7 @@ ConversationsWidget.prototype.init = function(geometry)
 	this.bboxMeshHelper = new THREE.Mesh(bbox,new THREE.MeshBasicMaterial( { color: 0xFFFFFF,  wireframe: true , visible: false} ));
 	this.bboxMeshHelper.position = this.object.position;
 	this.bboxMeshHelper.visible=false;
-	Ewii3D.getInstance().scene.add(this.bboxMeshHelper);
+	Gamliba.getInstance().scene.add(this.bboxMeshHelper);
 
 	this.chatArea = $("<div id=\"chatArea\"></div>");
 	
@@ -104,8 +104,8 @@ ConversationsWidget.prototype.refresh = function()
 	boundingbox.min.z=0;
 	
 	
-	topright = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.max),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
-	bottomleft = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.min),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	topright = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.max),Gamliba.getInstance().camera,Gamliba.getInstance().renderer.domElement);
+	bottomleft = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.min),Gamliba.getInstance().camera,Gamliba.getInstance().renderer.domElement);
 	this.text.style.left = (bottomleft.x) + 'px';
 	this.text.style.top = (topright.y) + 'px';
 	

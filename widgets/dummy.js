@@ -1,8 +1,8 @@
 function DummyWidget(opts)
 {
-	GamlibaWidget.call(this);
+	Ewii3DWidget.call(this);
 	
 }
 
-DummyWidget.prototype = new GamlibaWidget();
+DummyWidget.prototype = new Ewii3DWidget();
 

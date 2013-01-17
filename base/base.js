@@ -2,10 +2,10 @@
 
 /*
  *  This is the main file used by the 3D interface. It defines the most important prototypes that are in use.
- *  The main object is a singleton-like object of type Gamliba. It's core functionality is to setup the 3D scene
+ *  The main object is a singleton-like object of type Ewii3D. It's core functionality is to setup the 3D scene
  *  and events.
- *  In order to access the object, one should use the getInstance function: Gamliba.getinstance() .
- *  One more important prototype is the GamlibaWidget prototype, which defines the basic functionality for 3D widgets.
+ *  In order to access the object, one should use the getInstance function: Ewii3D.getinstance() .
+ *  One more important prototype is the Ewii3DWidget prototype, which defines the basic functionality for 3D widgets.
  */
 
 
@@ -25,44 +25,44 @@ function toScreenXY(position, camera, canvas) {
 			}
 
 /*
- * Gamliba Singleton, renders and animates the entire scene.
+ * Ewii3D Singleton, renders and animates the entire scene.
  * sets up all widgets and the environment according to retrieved JSON data.
- * Before anything can be done, the main render loop should be called by Gamliba.getInstance().loop();
+ * Before anything can be done, the main render loop should be called by Ewii3D.getInstance().loop();
  */
 
-var Gamliba = new function  Gamliba()
+var Ewii3D = new function  Ewii3D()
 {
 	var self=this;
 	
-	Gamliba.getInstance = function()
+	Ewii3D.getInstance = function()
 	{
 		//console.log(self);
 		
 		return self;
 	}
 	
-	return Gamliba;
+	return Ewii3D;
 }
 
-Gamliba.prototype.container;
-Gamliba.prototype.camera;
-Gamliba.prototype.controls;
-Gamliba.prototype.scene;
-Gamliba.prototype.projector;
-Gamliba.prototype.renderer;
-Gamliba.prototype.objects = [];
-Gamliba.prototype.plane;
+Ewii3D.prototype.container;
+Ewii3D.prototype.camera;
+Ewii3D.prototype.controls;
+Ewii3D.prototype.scene;
+Ewii3D.prototype.projector;
+Ewii3D.prototype.renderer;
+Ewii3D.prototype.objects = [];
+Ewii3D.prototype.plane;
 
-Gamliba.prototype.mouse = new THREE.Vector2(),
-Gamliba.prototype.offset = new THREE.Vector3(),
-Gamliba.prototype.INTERSECTED;
-Gamliba.prototype.SELECTED;
+Ewii3D.prototype.mouse = new THREE.Vector2(),
+Ewii3D.prototype.offset = new THREE.Vector3(),
+Ewii3D.prototype.INTERSECTED;
+Ewii3D.prototype.SELECTED;
 
 /*
  * setups the scene, and starts the animation loop of the webgl canvas.
  */
 
-Gamliba.prototype.loop = function()
+Ewii3D.prototype.loop = function()
 {
 	this.setup();
 	this.animate();
@@ -76,7 +76,7 @@ Gamliba.prototype.loop = function()
  *	It sends an AJAX request for a json formatted file, to retrieve the list of the widgets and other settings.
  */
 
-Gamliba.prototype.setup = function()
+Ewii3D.prototype.setup = function()
 {
 	this.container = document.createElement( 'div' );
 	document.body.appendChild( this.container );
@@ -99,7 +99,7 @@ Gamliba.prototype.setup = function()
 	jQuery.getJSON("demo/scene.json", function(data)
 	{
 		
-		Gamliba.getInstance().scene.add(Gamliba.getInstance().setEnv(data.cubeProjection));
+		Ewii3D.getInstance().scene.add(Ewii3D.getInstance().setEnv(data.cubeProjection));
 		
 		for (i=0;i<data.widgets.length;i++)
 		{
@@ -124,7 +124,7 @@ Gamliba.prototype.setup = function()
  *	also, it sets up a resize listener, in case the window size is changed.
  */
 
-Gamliba.prototype.setActions=function()
+Ewii3D.prototype.setActions=function()
 {
 	this.renderer.domElement.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
 	this.renderer.domElement.addEventListener( 'mousedown', this.onDocumentMouseDown, false );
@@ -141,7 +141,7 @@ Gamliba.prototype.setActions=function()
  *
  */
 
-Gamliba.prototype.setEnv=function(envName)
+Ewii3D.prototype.setEnv=function(envName)
 {
 	var urlPrefix = "demo/"+envName+"/";
 	var urls = [ urlPrefix + "3.jpg", urlPrefix + "1.jpg",
@@ -177,17 +177,17 @@ Gamliba.prototype.setEnv=function(envName)
  *	causes the scene to be rerendered according to the new width and height of the window.
  */
 
-Gamliba.prototype.onWindowResize=function() {
+Ewii3D.prototype.onWindowResize=function() {
 
-	Gamliba.getInstance().camera.aspect = window.innerWidth / window.innerHeight;
-	Gamliba.getInstance().camera.updateProjectionMatrix();
+	Ewii3D.getInstance().camera.aspect = window.innerWidth / window.innerHeight;
+	Ewii3D.getInstance().camera.updateProjectionMatrix();
 
-	Gamliba.getInstance().renderer.setSize( window.innerWidth, window.innerHeight );
+	Ewii3D.getInstance().renderer.setSize( window.innerWidth, window.innerHeight );
 	
-	for (o in Gamliba.getInstance().objects)
+	for (o in Ewii3D.getInstance().objects)
 	{
-		console.log(Gamliba.getInstance().objects[o]);
-		Gamliba.getInstance().objects[o].gamlibaWidget.refresh();
+		console.log(Ewii3D.getInstance().objects[o]);
+		Ewii3D.getInstance().objects[o].ewii3DWidget.refresh();
 	}
 
 }
@@ -196,30 +196,30 @@ Gamliba.prototype.onWindowResize=function() {
  *	event handler for mouse move events
  */
 
-Gamliba.prototype.onDocumentMouseMove=function( event ) {
+Ewii3D.prototype.onDocumentMouseMove=function( event ) {
 
 	event.preventDefault();
 
-	Gamliba.getInstance().mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	Gamliba.getInstance().mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+	Ewii3D.getInstance().mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	Ewii3D.getInstance().mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 	//
 
-	var vector = new THREE.Vector3( Gamliba.getInstance().mouse.x, Gamliba.getInstance().mouse.y, 0.5 );
-	Gamliba.getInstance().projector.unprojectVector( vector, Gamliba.getInstance().camera );
+	var vector = new THREE.Vector3( Ewii3D.getInstance().mouse.x, Ewii3D.getInstance().mouse.y, 0.5 );
+	Ewii3D.getInstance().projector.unprojectVector( vector, Ewii3D.getInstance().camera );
 
-	var ray = new THREE.Ray( Gamliba.getInstance().camera.position, 
-				 vector.subSelf( Gamliba.getInstance().camera.position ).normalize() );
+	var ray = new THREE.Ray( Ewii3D.getInstance().camera.position, 
+				 vector.subSelf( Ewii3D.getInstance().camera.position ).normalize() );
 
 
-	if ( Gamliba.getInstance().SELECTED ) {
+	if ( Ewii3D.getInstance().SELECTED ) {
 
-		var intersects = ray.intersectObject( Gamliba.getInstance().plane );
-		Gamliba.getInstance().SELECTED.gamlibaWidget.grabAction();
-		Gamliba.getInstance().SELECTED.position.copy( intersects[ 0 ].point.subSelf( Gamliba.getInstance().offset ) );
+		var intersects = ray.intersectObject( Ewii3D.getInstance().plane );
+		Ewii3D.getInstance().SELECTED.ewii3DWidget.grabAction();
+		Ewii3D.getInstance().SELECTED.position.copy( intersects[ 0 ].point.subSelf( Ewii3D.getInstance().offset ) );
 		
-		Gamliba.getInstance().SELECTED.lookAt( new THREE.Vector3 (0,350,4200) );
-		Gamliba.getInstance().plane.position.copy( Gamliba.getInstance().SELECTED.position );
+		Ewii3D.getInstance().SELECTED.lookAt( new THREE.Vector3 (0,350,4200) );
+		Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().SELECTED.position );
 		/*plane.lookAt( camera.position );
 		plane.rotation.x += Math.PI/2;*/
 		return;
@@ -227,33 +227,33 @@ Gamliba.prototype.onDocumentMouseMove=function( event ) {
 	}
 
 
-	var intersects = ray.intersectObjects( Gamliba.getInstance().objects );
+	var intersects = ray.intersectObjects( Ewii3D.getInstance().objects );
 
 	if ( intersects.length > 0 ) {
 
-		if ( Gamliba.getInstance().INTERSECTED != intersects[ 0 ].object ) {
+		if ( Ewii3D.getInstance().INTERSECTED != intersects[ 0 ].object ) {
 
 			//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
 
-			Gamliba.getInstance().INTERSECTED = intersects[ 0 ].object;
+			Ewii3D.getInstance().INTERSECTED = intersects[ 0 ].object;
 			//INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 
-			Gamliba.getInstance().plane.position.copy( Gamliba.getInstance().INTERSECTED.position );
+			Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().INTERSECTED.position );
 			/*plane.lookAt( camera.position );
 			plane.rotation.x += Math.PI/2;*/
 			
 
 		}
 
-		Gamliba.getInstance().container.style.cursor = 'pointer';
+		Ewii3D.getInstance().container.style.cursor = 'pointer';
 
 	} else {
 
 		//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
 
-		Gamliba.getInstance().INTERSECTED = null;
+		Ewii3D.getInstance().INTERSECTED = null;
 
-		Gamliba.getInstance().container.style.cursor = 'auto';
+		Ewii3D.getInstance().container.style.cursor = 'auto';
 
 	}
 
@@ -263,29 +263,29 @@ Gamliba.prototype.onDocumentMouseMove=function( event ) {
  *	event handler for mouse down events
  */
 
-Gamliba.prototype.onDocumentMouseDown=function( event ) {
+Ewii3D.prototype.onDocumentMouseDown=function( event ) {
 
 	console.log("DOWN");
 	event.preventDefault();
 
-	var vector = new THREE.Vector3( Gamliba.getInstance().mouse.x, Gamliba.getInstance().mouse.y, 0.5 );
-	Gamliba.getInstance().projector.unprojectVector( vector, Gamliba.getInstance().camera );
+	var vector = new THREE.Vector3( Ewii3D.getInstance().mouse.x, Ewii3D.getInstance().mouse.y, 0.5 );
+	Ewii3D.getInstance().projector.unprojectVector( vector, Ewii3D.getInstance().camera );
 
-	var ray = new THREE.Ray( Gamliba.getInstance().camera.position, vector.subSelf( Gamliba.getInstance().camera.position ).normalize() );
+	var ray = new THREE.Ray( Ewii3D.getInstance().camera.position, vector.subSelf( Ewii3D.getInstance().camera.position ).normalize() );
 
-	var intersects = ray.intersectObjects( Gamliba.getInstance().objects );
+	var intersects = ray.intersectObjects( Ewii3D.getInstance().objects );
 
 	if ( intersects.length > 0 ) {
 
 //					controls.enabled = false;
 
-		Gamliba.getInstance().SELECTED = intersects[ 0 ].object;
-		Gamliba.getInstance().SELECTED.gamlibaWidget.clickAction();
+		Ewii3D.getInstance().SELECTED = intersects[ 0 ].object;
+		Ewii3D.getInstance().SELECTED.ewii3DWidget.clickAction();
 
-		var intersects = ray.intersectObject( Gamliba.getInstance().plane );
-		Gamliba.getInstance().offset.copy( intersects[ 0 ].point ).subSelf( Gamliba.getInstance().plane.position );
+		var intersects = ray.intersectObject( Ewii3D.getInstance().plane );
+		Ewii3D.getInstance().offset.copy( intersects[ 0 ].point ).subSelf( Ewii3D.getInstance().plane.position );
 
-		Gamliba.getInstance().container.style.cursor = 'move';
+		Ewii3D.getInstance().container.style.cursor = 'move';
 
 	}
 
@@ -295,22 +295,22 @@ Gamliba.prototype.onDocumentMouseDown=function( event ) {
  *	event handler for mouse up events
  */
 
-Gamliba.prototype.onDocumentMouseUp=function( event ) {
+Ewii3D.prototype.onDocumentMouseUp=function( event ) {
 
 	event.preventDefault();
 
 	//controls.enabled = true;
 
-	if ( Gamliba.getInstance().INTERSECTED ) {
+	if ( Ewii3D.getInstance().INTERSECTED ) {
 
-		Gamliba.getInstance().plane.position.copy( Gamliba.getInstance().INTERSECTED.position );
-		if (Gamliba.getInstance().SELECTED)
-			Gamliba.getInstance().SELECTED.gamlibaWidget.clickAction();
-		Gamliba.getInstance().SELECTED = null;
+		Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().INTERSECTED.position );
+		if (Ewii3D.getInstance().SELECTED)
+			Ewii3D.getInstance().SELECTED.ewii3DWidget.clickAction();
+		Ewii3D.getInstance().SELECTED = null;
 
 	}
 
-	Gamliba.getInstance().container.style.cursor = 'auto';
+	Ewii3D.getInstance().container.style.cursor = 'auto';
 
 }
 
@@ -318,7 +318,7 @@ Gamliba.prototype.onDocumentMouseUp=function( event ) {
  *	adds some light objects to the scene, a spot light and a sun light.
  */
 
-Gamliba.prototype.addLights=function()
+Ewii3D.prototype.addLights=function()
 {
 	var light = new THREE.SpotLight( 0xffffff, 1 );
 	light.position.set( 0, 0, 2000 );
@@ -345,7 +345,7 @@ Gamliba.prototype.addLights=function()
  *	sets up the renderer object and appends the domElement to the document.
  */
 
-Gamliba.prototype.setRenderer=function()
+Ewii3D.prototype.setRenderer=function()
 {
 	this.projector = new THREE.Projector();
 
@@ -364,7 +364,7 @@ Gamliba.prototype.setRenderer=function()
  *	the plane is invisible.
  */
 
-Gamliba.prototype.setHelpers = function()
+Ewii3D.prototype.setHelpers = function()
 {
 	this.plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
 	this.plane.visible = false;
@@ -376,11 +376,11 @@ Gamliba.prototype.setHelpers = function()
  *	starts the animation loop.
  */
 
-Gamliba.prototype.animate=function() {
+Ewii3D.prototype.animate=function() {
 
-	requestAnimationFrame( Gamliba.getInstance().animate );
+	requestAnimationFrame( Ewii3D.getInstance().animate );
 
-	Gamliba.getInstance().render();
+	Ewii3D.getInstance().render();
 
 }
 
@@ -388,49 +388,49 @@ Gamliba.prototype.animate=function() {
  *	renders the canvas only once.
  */
 
-Gamliba.prototype.render=function() {
+Ewii3D.prototype.render=function() {
 
 
-	Gamliba.getInstance().renderer.render( Gamliba.getInstance().scene, Gamliba.getInstance().camera );
+	Ewii3D.getInstance().renderer.render( Ewii3D.getInstance().scene, Ewii3D.getInstance().camera );
 
 }
 
 
 /*
  *  basic interface for the widgets. all widgets' prototypes must be an instance of this class.
- *  widgets that inherit for GamlibaWidget will not be able to be grabbed or interacted at all,
- *  see GamlibaGrabbableWidget for more info.
+ *  widgets that inherit for Ewii3DWidget will not be able to be grabbed or interacted at all,
+ *  see Ewii3DGrabbableWidget for more info.
  */
 
-function GamlibaWidget()
+function Ewii3DWidget()
 {
-	this.id = GamlibaWidget.prototype.id++;
+	this.id = Ewii3DWidget.prototype.id++;
 }
 
 /*
  * the 3d model used for this widget, default: undefined
  */
-GamlibaWidget.prototype.model=undefined;
+Ewii3DWidget.prototype.model=undefined;
 /*
  * an object that stores the properties of this object
  */
-GamlibaWidget.prototype.properties={};
+Ewii3DWidget.prototype.properties={};
 /*
  * the 3D position of this widget
  */
-GamlibaWidget.prototype.position={x:0,y:0,z:0};
+Ewii3DWidget.prototype.position={x:0,y:0,z:0};
 
 /*
  * a reference to the 3D THREE.Mesh object 
  */
 
-GamlibaWidget.prototype.object=undefined;
+Ewii3DWidget.prototype.object=undefined;
 
 /*
  * a widget counter, used for assigning id's to widgets.
  */
 
-GamlibaWidget.prototype.id = 0;
+Ewii3DWidget.prototype.id = 0;
 
 
 /*
@@ -439,7 +439,7 @@ GamlibaWidget.prototype.id = 0;
  *	then it sets up the this.object propery using that mesh and positions it in the scene.
  */
 
-GamlibaWidget.prototype.init = function(geo)
+Ewii3DWidget.prototype.init = function(geo)
 {
 	console.log("INITING WIDGET");
 	console.log(geo);
@@ -449,13 +449,13 @@ GamlibaWidget.prototype.init = function(geo)
 	this.object.castShadow = true;
 	this.object.receiveShadow = true;
 	
-	this.object.gamliba={
+	this.object.ewii3D={
 			click:this.clickAction,
 			grab:this.grabAction
 		};
 
 	
-	this.object.gamlibaWidget=this;
+	this.object.ewii3DWidget=this;
 	
 	
 	this.object.position.x = this.position.x;
@@ -467,8 +467,8 @@ GamlibaWidget.prototype.init = function(geo)
 	this.object.scale.z =  60;*/
 
 
-	Gamliba.getInstance().scene.add(this.object);
-	//Gamliba.getInstance().objects.push(this.object);
+	Ewii3D.getInstance().scene.add(this.object);
+	//Ewii3D.getInstance().objects.push(this.object);
 	console.log("OH HAI");
 	console.log(this);
 }
@@ -477,7 +477,7 @@ GamlibaWidget.prototype.init = function(geo)
  *  changes the position of the widget.
  */
 
-GamlibaWidget.prototype.setPosition = function (x,y,z)
+Ewii3DWidget.prototype.setPosition = function (x,y,z)
 {
 
 	this.position={x:x,y:y,z:z};
@@ -488,7 +488,7 @@ GamlibaWidget.prototype.setPosition = function (x,y,z)
  */
 
 
-GamlibaWidget.prototype.clickAction = function()
+Ewii3DWidget.prototype.clickAction = function()
 {
 }
 
@@ -496,7 +496,7 @@ GamlibaWidget.prototype.clickAction = function()
  *  actions to be taken once a grab (mouse down+move) is made.
  */
 
-GamlibaWidget.prototype.grabAction = function()
+Ewii3DWidget.prototype.grabAction = function()
 {
 }
 
@@ -506,7 +506,7 @@ GamlibaWidget.prototype.grabAction = function()
  *  in the child widgets.
  */
 
-GamlibaWidget.prototype.load = function()
+Ewii3DWidget.prototype.load = function()
 {
 	var jsonLoader = new THREE.JSONLoader();
 	console.log(this.model);
@@ -520,42 +520,42 @@ GamlibaWidget.prototype.load = function()
  *  sets this.model to be `model`
  */
 
-GamlibaWidget.prototype.setModel = function (model)
+Ewii3DWidget.prototype.setModel = function (model)
 {
 	this.model = model;
 }
 
 
-GamlibaWidget.prototype.refresh=function()
+Ewii3DWidget.prototype.refresh=function()
 {
 }
 
 /*
- *  GamlibaGrabbableWidgets extends GamlibaWidget and registers the widget to the interactable widgets
- *  in the Gamliba Singleton.
+ *  Ewii3DGrabbableWidgets extends Ewii3DWidget and registers the widget to the interactable widgets
+ *  in the Ewii3D Singleton.
  */
 
-function GamlibaGrabbableWidget ()
+function Ewii3DGrabbableWidget ()
 {
 	//super constructor call
-	GamlibaWidget.call(this);
+	Ewii3DWidget.call(this);
 }
 
 /*
  *  sets up the inheritance.
  */
 
-GamlibaGrabbableWidget.prototype = new GamlibaWidget();
+Ewii3DGrabbableWidget.prototype = new Ewii3DWidget();
 
 /*
  *  calls the super init method and then registers this.object with
  *  the objects that can be interacted.
  */
 
-GamlibaGrabbableWidget.prototype.init = function(geometry)
+Ewii3DGrabbableWidget.prototype.init = function(geometry)
 {
-	GamlibaWidget.prototype.init.call(this,geometry);
-	Gamliba.getInstance().objects.push(this.object);
+	Ewii3DWidget.prototype.init.call(this,geometry);
+	Ewii3D.getInstance().objects.push(this.object);
 }
 
 
@@ -566,12 +566,12 @@ GamlibaGrabbableWidget.prototype.init = function(geometry)
 
 
 /*
- *  upon document's readiness, start the setup and animation loop of Gamliba
+ *  upon document's readiness, start the setup and animation loop of Ewii3D
  */
 
 jQuery(document).ready(function()
 {
-	Gamliba.getInstance().loop();
+	Ewii3D.getInstance().loop();
 });
 
 
