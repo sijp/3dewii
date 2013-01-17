@@ -1,18 +1,13 @@
-3dewii
+3Dewii
 ======
 
 3D Extensible Web Interface Infrarstucture
 
 
-Gamliba - Frontend Documentation
+3Dewii - Frontend Documentation
 
 Introduction
-Gamliba is a social network aimed for school students. It features several features for this
-age group's activities.
-
-The main idea is to provide an easy, yet atractive user interface for this target population.
-For this we chose a 3D web environment - WebGL. We provide the user the freedom to setup
-his space with several widgets, similary to smartphones.
+3Dewii is an Extensible 3D interface infrastructure aimed for building 3D Web interactive worlds.
 
 Pre-requesites
 -------------------------------------------------------------------------------------------------
@@ -25,10 +20,9 @@ It also requires the user to have a WebGL supported browser with an OpenGL suppo
 Directory Structure:
 -------------------------------------------------------------------------------------------------
 root directory:
-	* index.html (should be converted to HaML) - the main html file, adds manually all scripts
-	  for all widgets. And has an embedded CSS (should be external per widget).
-	* Three.js - a WebGL library
-	* jQuery - a DOM manipulation library
+* index.html (should be converted to HaML) - the main html file, adds manually all scripts for all widgets. And has an embedded CSS (should be external per widget).
+* Three.js - a WebGL library
+* jQuery - a DOM manipulation library
 
 base directory:
 	* base.js - the main Javascript code, that runs this site, see further info ahead.
@@ -46,7 +40,7 @@ demo directory:
 base.js:
 -------------------------------------------------------------------------------------------------
 This is the core functionallity of the user interface. It provieds 3 basic objects:
-	* Gamliba - this is a singleton object, whose all purpose is to manage and load
+	* Ewii3D - this is a singleton object, whose all purpose is to manage and load
 	  the various 3D components. It sets up the 3D scene, using Three.js, and then
 	  adds all needed elements: a Camera, lights, the environemt Cube, and an
 	  helper plane for moving objects.
@@ -54,12 +48,12 @@ This is the core functionallity of the user interface. It provieds 3 basic objec
 	  implements 3 event handlers: mousemove, mousedown and mouseup, which will move objects that 
 	  are in that array.
 	  It also implements a windowresize handler for refreshing the scene.
-	* GamlibaWidget - This is an object that defines the basic actions needed for every widget.
+	* Ewii3DWidget - This is an object that defines the basic actions needed for every widget.
 	  it has a load method, that loads a json file (specified by the 'model' attribute) and upon
 	  success calls the init method that can be overriden by other widgets.
 	  Widgets that extend this object's functionallity will not be moveable.
-	* GamlibaMoveableWidget - This is a simple extension to GamlibaWidget, only that it adds its
-	  3D model to the objects array of the Gamliba singleton, thus allowing it to accept mouse 
+	* Ewii3DMoveableWidget - This is a simple extension to Ewii3DWidget, only that it adds its
+	  3D model to the objects array of the Ewii3D singleton, thus allowing it to accept mouse 
 	  events and moved around.
 
 	*** for more info please see the code.
@@ -81,8 +75,13 @@ texture baking in the blender.
 The result file is a single image containing all 6 faces textures that should be seperated externally
 (using gimp). each image should be named in a file #.jpg where # is the number of the image.
 The order is as such: 
+
 			-------------
+
 			| 1 | 2 | 3 |
+
 			-------------
+
 			| 6 | 5 | 4 |
+
 			-------------
