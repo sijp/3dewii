@@ -4,8 +4,7 @@
  */
 
 
-function FacebookWidget(opts)
-{
+function FacebookWidget(opts){
 	//super call
 	Ewii3DGrabbableWidget.call(this);
 	
@@ -29,8 +28,7 @@ FacebookWidget.prototype.model="facebook.js";
  */
 
 
-FacebookWidget.prototype.init = function(geometry)
-{
+FacebookWidget.prototype.init = function(geometry){
 	console.log("FACEBOOKKKKK");
 	Ewii3DGrabbableWidget.prototype.init.call(this,geometry);
 
@@ -61,8 +59,7 @@ FacebookWidget.prototype.init = function(geometry)
  */
 
 
-FacebookWidget.prototype.startLongPolling = function(self)
-{
+FacebookWidget.prototype.startLongPolling = function(self){
 	var polling=self.startLongPolling;
 	jQuery.getJSON("/gamlibaspace/stream",function(data)
 	{
@@ -76,8 +73,7 @@ FacebookWidget.prototype.startLongPolling = function(self)
  */
 
 
-FacebookWidget.prototype.clickAction = function()
-{
+FacebookWidget.prototype.clickAction = function(){
 	this.text.style.display = "block";
 	coord = toScreenXY(this.object.position,Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
 
@@ -90,8 +86,7 @@ FacebookWidget.prototype.clickAction = function()
  */
 
 
-FacebookWidget.prototype.grabAction = function()
-{
+FacebookWidget.prototype.grabAction = function(){
 
 	this.text.style.display = "none";
 	

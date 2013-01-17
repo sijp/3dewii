@@ -30,8 +30,7 @@ function toScreenXY(position, camera, canvas) {
  * Before anything can be done, the main render loop should be called by Ewii3D.getInstance().loop();
  */
 
-var Ewii3D = new function  Ewii3D()
-{
+var Ewii3D = new function  Ewii3D(){
 	var self=this;
 	
 	Ewii3D.getInstance = function()
@@ -62,8 +61,7 @@ Ewii3D.prototype.SELECTED;
  * setups the scene, and starts the animation loop of the webgl canvas.
  */
 
-Ewii3D.prototype.loop = function()
-{
+Ewii3D.prototype.loop = function(){
 	this.setup();
 	this.animate();
 }
@@ -76,8 +74,7 @@ Ewii3D.prototype.loop = function()
  *	It sends an AJAX request for a json formatted file, to retrieve the list of the widgets and other settings.
  */
 
-Ewii3D.prototype.setup = function()
-{
+Ewii3D.prototype.setup = function(){
 	this.container = document.createElement( 'div' );
 	document.body.appendChild( this.container );
 	
@@ -124,8 +121,7 @@ Ewii3D.prototype.setup = function()
  *	also, it sets up a resize listener, in case the window size is changed.
  */
 
-Ewii3D.prototype.setActions=function()
-{
+Ewii3D.prototype.setActions=function(){
 	this.renderer.domElement.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
 	this.renderer.domElement.addEventListener( 'mousedown', this.onDocumentMouseDown, false );
 	this.renderer.domElement.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
@@ -141,8 +137,7 @@ Ewii3D.prototype.setActions=function()
  *
  */
 
-Ewii3D.prototype.setEnv=function(envName)
-{
+Ewii3D.prototype.setEnv=function(envName){
 	var urlPrefix = "demo/"+envName+"/";
 	var urls = [ urlPrefix + "3.jpg", urlPrefix + "1.jpg",
 	urlPrefix + "5.jpg", urlPrefix + "6.jpg",
@@ -318,8 +313,7 @@ Ewii3D.prototype.onDocumentMouseUp=function( event ) {
  *	adds some light objects to the scene, a spot light and a sun light.
  */
 
-Ewii3D.prototype.addLights=function()
-{
+Ewii3D.prototype.addLights=function(){
 	var light = new THREE.SpotLight( 0xffffff, 1 );
 	light.position.set( 0, 0, 2000 );
 	light.castShadow = true;
@@ -345,8 +339,7 @@ Ewii3D.prototype.addLights=function()
  *	sets up the renderer object and appends the domElement to the document.
  */
 
-Ewii3D.prototype.setRenderer=function()
-{
+Ewii3D.prototype.setRenderer=function(){
 	this.projector = new THREE.Projector();
 
 	this.renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -364,8 +357,7 @@ Ewii3D.prototype.setRenderer=function()
  *	the plane is invisible.
  */
 
-Ewii3D.prototype.setHelpers = function()
-{
+Ewii3D.prototype.setHelpers = function(){
 	this.plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
 	this.plane.visible = false;
 	this.plane.rotation.x = Math.PI/2;
@@ -402,8 +394,7 @@ Ewii3D.prototype.render=function() {
  *  see Ewii3DGrabbableWidget for more info.
  */
 
-function Ewii3DWidget()
-{
+function Ewii3DWidget(){
 	this.id = Ewii3DWidget.prototype.id++;
 }
 
@@ -439,8 +430,7 @@ Ewii3DWidget.prototype.id = 0;
  *	then it sets up the this.object propery using that mesh and positions it in the scene.
  */
 
-Ewii3DWidget.prototype.init = function(geo)
-{
+Ewii3DWidget.prototype.init = function(geo){
 	console.log("INITING WIDGET");
 	console.log(geo);
 	this.object=new THREE.Mesh( geo, new THREE.MeshFaceMaterial({shading:THREE.FlatShading}) );
@@ -477,8 +467,7 @@ Ewii3DWidget.prototype.init = function(geo)
  *  changes the position of the widget.
  */
 
-Ewii3DWidget.prototype.setPosition = function (x,y,z)
-{
+Ewii3DWidget.prototype.setPosition = function (x,y,z){
 
 	this.position={x:x,y:y,z:z};
 }
@@ -488,16 +477,14 @@ Ewii3DWidget.prototype.setPosition = function (x,y,z)
  */
 
 
-Ewii3DWidget.prototype.clickAction = function()
-{
+Ewii3DWidget.prototype.clickAction = function(){
 }
 
 /*
  *  actions to be taken once a grab (mouse down+move) is made.
  */
 
-Ewii3DWidget.prototype.grabAction = function()
-{
+Ewii3DWidget.prototype.grabAction = function(){
 }
 
 
@@ -506,8 +493,7 @@ Ewii3DWidget.prototype.grabAction = function()
  *  in the child widgets.
  */
 
-Ewii3DWidget.prototype.load = function()
-{
+Ewii3DWidget.prototype.load = function(){
 	var jsonLoader = new THREE.JSONLoader();
 	console.log(this.model);
 	var self = this;
@@ -520,14 +506,12 @@ Ewii3DWidget.prototype.load = function()
  *  sets this.model to be `model`
  */
 
-Ewii3DWidget.prototype.setModel = function (model)
-{
+Ewii3DWidget.prototype.setModel = function (model){
 	this.model = model;
 }
 
 
-Ewii3DWidget.prototype.refresh=function()
-{
+Ewii3DWidget.prototype.refresh=function(){
 }
 
 /*
@@ -535,8 +519,7 @@ Ewii3DWidget.prototype.refresh=function()
  *  in the Ewii3D Singleton.
  */
 
-function Ewii3DGrabbableWidget ()
-{
+function Ewii3DGrabbableWidget (){
 	//super constructor call
 	Ewii3DWidget.call(this);
 }
@@ -552,8 +535,7 @@ Ewii3DGrabbableWidget.prototype = new Ewii3DWidget();
  *  the objects that can be interacted.
  */
 
-Ewii3DGrabbableWidget.prototype.init = function(geometry)
-{
+Ewii3DGrabbableWidget.prototype.init = function(geometry){
 	Ewii3DWidget.prototype.init.call(this,geometry);
 	Ewii3D.getInstance().objects.push(this.object);
 }
@@ -569,8 +551,7 @@ Ewii3DGrabbableWidget.prototype.init = function(geometry)
  *  upon document's readiness, start the setup and animation loop of Ewii3D
  */
 
-jQuery(document).ready(function()
-{
+jQuery(document).ready(function(){
 	Ewii3D.getInstance().loop();
 });
 

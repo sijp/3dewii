@@ -1,5 +1,4 @@
-function DummyWidget(opts)
-{
+function DummyWidget(opts){
 	Ewii3DWidget.call(this);
 	
 }

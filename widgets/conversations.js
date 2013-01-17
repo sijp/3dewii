@@ -4,8 +4,7 @@
  */
 
 
-function ConversationsWidget(opts)
-{
+function ConversationsWidget(opts){
 	//super call
 	Ewii3DGrabbableWidget.call(this);
 	
@@ -29,8 +28,7 @@ ConversationsWidget.prototype.model="streamPod.js";
  */
 
 
-ConversationsWidget.prototype.init = function(geometry)
-{
+ConversationsWidget.prototype.init = function(geometry){
 	Ewii3DGrabbableWidget.prototype.init.call(this,geometry);
 
 	this.object.geometry.computeBoundingBox();
@@ -69,8 +67,7 @@ ConversationsWidget.prototype.init = function(geometry)
  */
 
 
-ConversationsWidget.prototype.startLongPolling = function(self)
-{
+ConversationsWidget.prototype.startLongPolling = function(self){
 	var polling=self.startLongPolling;
 	jQuery.getJSON("/gamlibaspace/Conversations",function(data)
 	{
@@ -84,8 +81,7 @@ ConversationsWidget.prototype.startLongPolling = function(self)
  */
 
 
-ConversationsWidget.prototype.clickAction = function()
-{
+ConversationsWidget.prototype.clickAction = function(){
 	$(this.text).fadeIn(200);
 	
 	this.refresh();
@@ -95,8 +91,7 @@ ConversationsWidget.prototype.clickAction = function()
  *  Once the widget is grabbed we want the text to disapear (syncing the 2D animation with the 3D animation is kind of lame)
  */
 
-ConversationsWidget.prototype.refresh = function()
-{
+ConversationsWidget.prototype.refresh = function(){
 	this.bboxMeshHelper.geometry.computeBoundingBox();
 	boundingbox = this.bboxMeshHelper.geometry.boundingBox;
 	
@@ -114,8 +109,7 @@ ConversationsWidget.prototype.refresh = function()
 
 }
 
-ConversationsWidget.prototype.grabAction = function()
-{
+ConversationsWidget.prototype.grabAction = function(){
 
 	//this.text.style.display = "none";
 	$(this.text).fadeOut(100);

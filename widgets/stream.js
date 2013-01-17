@@ -4,8 +4,7 @@
  */
 
 
-function StreamWidget(opts)
-{
+function StreamWidget(opts){
 	//super call
 	Ewii3DGrabbableWidget.call(this);
 	
@@ -29,8 +28,7 @@ StreamWidget.prototype.model="widgets/stream/streamPod.js";
  */
 
 
-StreamWidget.prototype.init = function(geometry)
-{
+StreamWidget.prototype.init = function(geometry){
 	Ewii3DGrabbableWidget.prototype.init.call(this,geometry);
 
 	this.object.geometry.computeBoundingBox();
@@ -123,8 +121,7 @@ StreamWidget.prototype.init = function(geometry)
  */
 
 
-StreamWidget.prototype.startLongPolling = function(self)
-{
+StreamWidget.prototype.startLongPolling = function(self){
 	var polling=self.startLongPolling;
 	jQuery.getJSON("/stream",function(data)
 	{
@@ -138,8 +135,7 @@ StreamWidget.prototype.startLongPolling = function(self)
  */
 
 
-StreamWidget.prototype.clickAction = function()
-{
+StreamWidget.prototype.clickAction = function(){
 	$(this.text).fadeIn(200);
 	$(this.statusButton).fadeIn(200);
 	
@@ -150,8 +146,7 @@ StreamWidget.prototype.clickAction = function()
  *  Once the widget is grabbed we want the text to disapear (syncing the 2D animation with the 3D animation is kind of lame)
  */
 
-StreamWidget.prototype.refresh = function()
-{
+StreamWidget.prototype.refresh = function(){
 	this.bboxMeshHelper.geometry.computeBoundingBox();
 	boundingbox = this.bboxMeshHelper.geometry.boundingBox;
 	
@@ -172,8 +167,7 @@ StreamWidget.prototype.refresh = function()
 
 }
 
-StreamWidget.prototype.grabAction = function()
-{
+StreamWidget.prototype.grabAction = function(){
 
 	//this.text.style.display = "none";
 	$(this.text).fadeOut(100);
