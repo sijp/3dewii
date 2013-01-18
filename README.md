@@ -7,7 +7,9 @@
 3Dewii - Frontend Documentation
 
 Introduction
+-------------------------------------------------------------------------------------------------
 3Dewii is an Extensible 3D interface infrastructure aimed for building 3D Web interactive worlds.
+A very basic example can be seen at: http://www.sijp.co.il/3dewii/index.html
 
 Pre-requesites
 -------------------------------------------------------------------------------------------------
