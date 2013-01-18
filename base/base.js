@@ -105,10 +105,14 @@ Ewii3D.prototype.setup = function(){
 				
 				if (data.widgets[i].model!==undefined)
 					widget.setModel(data.widgets[i].model);
-				
-				position = data.widgets[i].position;
-				console.log(position);
-				widget.setPosition(position.x,position.y,position.z);
+				if (data.widgets[i].position!==undefined)	
+				{
+					position = data.widgets[i].position;
+					widget.setPosition(position.x,position.y,position.z);
+				}
+				if (data.widgets[i].scale!==undefined)
+					widget.setScale(data.widgets[i].scale);
+
 				widget.load();
 			};
 
@@ -452,9 +456,9 @@ Ewii3DWidget.prototype.init = function(geo){
 	this.object.position.y = this.position.y;
 	this.object.position.z = this.position.z;
 	
-	/*this.object.scale.x =  60;
-	this.object.scale.y =  60;
-	this.object.scale.z =  60;*/
+	this.object.scale.x *= this.scale;
+	this.object.scale.y *= this.scale;
+	this.object.scale.z *= this.scale;
 
 
 	Ewii3D.getInstance().scene.add(this.object);
@@ -470,6 +474,15 @@ Ewii3DWidget.prototype.init = function(geo){
 Ewii3DWidget.prototype.setPosition = function (x,y,z){
 
 	this.position={x:x,y:y,z:z};
+}
+
+/*
+ *  changes the scale factor of the widget.
+ */
+
+Ewii3DWidget.prototype.setScale = function (s){
+
+	this.scale=s;
 }
 
 /*
