@@ -9,7 +9,8 @@
 		{
 			"name":"DummyWidget",
 			"model":"spaceship.js",
-			"position": {"x":0,"y":700,"z":50}
+			"position": {"x":0,"y":400,"z":50},
+			"scale":100
 			
 		}
 	]

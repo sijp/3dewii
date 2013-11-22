@@ -46,7 +46,7 @@ StreamWidget.prototype.init = function(geometry){
 	this.bboxMeshHelper = new THREE.Mesh(bbox,new THREE.MeshBasicMaterial( { color: 0xFFFFFF,  wireframe: true , visible: false} ));
 	this.bboxMeshHelper.position = this.object.position;
 	this.bboxMeshHelper.visible=false;
-	Ewii3D.getInstance().scene.add(this.bboxMeshHelper);
+	Ewii3D.addObjectToScene(this.bboxMeshHelper);
 
 
 	this.text = document.createElement( 'div' );
@@ -154,8 +154,10 @@ StreamWidget.prototype.refresh = function(){
 	boundingbox.min.z=0;
 	
 	
-	topright = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.max),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
-	bottomleft = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.min),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	//topright = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.max),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	//bottomleft = toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.min),Ewii3D.getInstance().camera,Ewii3D.getInstance().renderer.domElement);
+	topright = Ewii3D.toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.max));
+	bottomleft = Ewii3D.toScreenXY(this.bboxMeshHelper.position.clone().addSelf(boundingbox.min));
 	this.text.style.left = (bottomleft.x) + 'px';
 	this.text.style.top = (topright.y) + 'px';
 	

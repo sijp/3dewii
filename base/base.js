@@ -30,79 +30,89 @@ function toScreenXY(position, camera, canvas) {
  * Before anything can be done, the main render loop should be called by Ewii3D.getInstance().loop();
  */
 
-var Ewii3D = new function  Ewii3D(){
-	var self=this;
+var Ewii3D = (function (self){
+
+	console.log("module pattern!");
+	console.log(self);
 	
-	Ewii3D.getInstance = function()
-	{
+
+	//deprecated
+	self.getInstance = function() {
 		//console.log(self);
 		
 		return self;
 	}
 	
-	return Ewii3D;
-}
+	var _attr={
+		container:null,
+		camera:null,
+		controls:null,
+		scene:null,
+		projector:null,
+		renderer:null,
+		objects : [],
+		plane:null,
+		mouse : new THREE.Vector2(),
+		offset : new THREE.Vector3(),
+		INTERSECTED:null,
+		SELECTED:null
+	};
+	/*
+	 * setups the scene, and starts the animation loop of the webgl canvas.
+	 */
 
-Ewii3D.prototype.container;
-Ewii3D.prototype.camera;
-Ewii3D.prototype.controls;
-Ewii3D.prototype.scene;
-Ewii3D.prototype.projector;
-Ewii3D.prototype.renderer;
-Ewii3D.prototype.objects = [];
-Ewii3D.prototype.plane;
+	self.loop = function(){
+		setup();
+		animate();
+	}
 
-Ewii3D.prototype.mouse = new THREE.Vector2(),
-Ewii3D.prototype.offset = new THREE.Vector3(),
-Ewii3D.prototype.INTERSECTED;
-Ewii3D.prototype.SELECTED;
+	self.addObjectToScene = function(obj){
+		console.log("adding object to scene:");
+		console.log(obj);
+		_attr.scene.add(obj);
+		god=new THREE.Mesh( new THREE.CubeGeometry( 1000, 1000, 1000 ));
+		god.position = obj.position;
+		_attr.scene.add( god );
+	}
 
-/*
- * setups the scene, and starts the animation loop of the webgl canvas.
- */
+	self.setGrabbable = function(obj){
+		_attr.objects.push(obj)
+	}
 
-Ewii3D.prototype.loop = function(){
-	this.setup();
-	this.animate();
-}
+	self.toScreenXY = function(position){
+		return toScreenXY(position,_attr.camera,_attr.renderer.domElement);
+	}
 
-/*
- *	this function, adds sets up the webgl Canvas, and adds to it all the relevant 3D objects, such as
- *	the environment sky cube, a camera, the helper plane (for moving widgets) and sets up events handlers
- *	for grabbing widgets.
- *
- *	It sends an AJAX request for a json formatted file, to retrieve the list of the widgets and other settings.
- */
+	/*
+	 *	this function, adds sets up the webgl Canvas, and adds to it all the relevant 3D objects, such as
+	 *	the environment sky cube, a camera, the helper plane (for moving widgets) and sets up events handlers
+	 *	for grabbing widgets.
+	 *
+	 *	It sends an AJAX request for a json formatted file, to retrieve the list of the widgets and other settings.
+	 */
 
-Ewii3D.prototype.setup = function(){
-	this.container = document.createElement( 'div' );
-	document.body.appendChild( this.container );
-	
-	this.camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
-	this.camera.position.z = 4200;
-	this.camera.position.y = 350;
-	this.camera.rotation.x = Math.PI/180;
-	
-	this.scene = new THREE.Scene();
-	this.scene.add(this.camera);
-	
-	this.scene.add( new THREE.AmbientLight( 0x606060 ) );
-	
-	this.addLights();
-	this.setHelpers();
-	this.setRenderer();
-	this.setActions();
-	
-	jQuery.getJSON("demo/scene.json", function(data)
-	{
+	function setup(){
+		_attr.container = document.createElement( 'div' );
+		document.body.appendChild( _attr.container );
 		
-		Ewii3D.getInstance().scene.add(Ewii3D.getInstance().setEnv(data.cubeProjection));
+		_attr.scene = new THREE.Scene();
+		setCamera();
+		addLights();
+		setHelpers();
+		setRenderer();
+		setActions();
+		
+		jQuery.getJSON("demo/scene.json",sceneLoadedCallback);
+	}
+
+	function sceneLoadedCallback(data){
+		_attr.scene.add(setEnv(data.cubeProjection));
 		
 		for (i=0;i<data.widgets.length;i++)
 		{
 			new function() {
 				widget = new window[data.widgets[i].name];
-				
+				console.log(data.widgets[i])	
 				if (data.widgets[i].model!==undefined)
 					widget.setModel(data.widgets[i].model);
 				if (data.widgets[i].position!==undefined)	
@@ -115,281 +125,294 @@ Ewii3D.prototype.setup = function(){
 
 				widget.load();
 			};
+		}
+	}
+
+	function setCamera(){
+		_attr.camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 1, 10000 );
+		_attr.camera.position.z = 4200;
+		_attr.camera.position.y = 350;
+		_attr.camera.rotation.x = Math.PI/180;
+		
+		_attr.scene.add(_attr.camera);
+		
+	}
+
+	/*
+	 *	this function adds the mousemove, mousedown and mouseup event listeners.
+	 *	also, it sets up a resize listener, in case the window size is changed.
+	 */
+
+	function setActions(){
+		_attr.renderer.domElement.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		_attr.renderer.domElement.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		_attr.renderer.domElement.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		
+		window.addEventListener( 'resize', onWindowResize, false );
+	}
+
+	/*
+	 *	setEnv, loads 6 images, from the `envName` directory and puts them on a cube as
+	 *	a cubemap for the environment (sky).
+	 *
+	 *	it returns a THREE.Mesh object whose geometry is that cube.
+	 *
+	 */
+
+	function setEnv(envName){
+		var urlPrefix = "demo/"+envName+"/";
+		var urls = [ urlPrefix + "3.jpg", urlPrefix + "1.jpg",
+		urlPrefix + "5.jpg", urlPrefix + "6.jpg",
+		urlPrefix + "4.jpg", urlPrefix + "2.jpg" ];
+		var textureCube = THREE.ImageUtils.loadTextureCube( urls ); 
+		textureCube.format = THREE.RGBFormat;
+		
+		var shader = THREE.ShaderUtils.lib[ "cube" ];
+		shader.uniforms[ "tCube" ].texture = textureCube;
+		
+		var material = new THREE.ShaderMaterial( {
+
+		  fragmentShader: shader.fragmentShader,
+		  vertexShader: shader.vertexShader,
+		  uniforms: shader.uniforms,
+		  depthWrite: false
+
+		});
+		
+		// build the skybox Mesh
+		skyboxMesh =  new THREE.Mesh( new THREE.CubeGeometry( 10000, 10000, 10000 ), material );
+		skyboxMesh.flipSided = true;
+		
+		skyboxMesh.rotation.y=Math.PI;
+		skyboxMesh.castShadow=false;
+		
+		// add it to the scene
+		return skyboxMesh;
+	}
+
+	/*
+	 *	causes the scene to be rerendered according to the new width and height of the window.
+	 */
+
+	function onWindowResize() {
+
+		_attr.camera.aspect = window.innerWidth / window.innerHeight;
+		_attr.camera.updateProjectionMatrix();
+
+		_attr.renderer.setSize( window.innerWidth, window.innerHeight );
+		
+		for (o in _attr.objects)
+		{
+			console.log(_attr.objects[o]);
+			_attr.objects[o].ewii3DWidget.refresh();
+		}
+
+	}
+
+	/*
+	 *	event handler for mouse move events
+	 */
+
+	function onDocumentMouseMove( event ) {
+
+		event.preventDefault();
+
+		_attr.mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		_attr.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+		//
+
+		var vector = new THREE.Vector3( _attr.mouse.x, _attr.mouse.y, 0.5 );
+		_attr.projector.unprojectVector( vector, _attr.camera );
+
+		var ray = new THREE.Ray( _attr.camera.position, 
+					 vector.subSelf( _attr.camera.position ).normalize() );
+
+
+		if ( _attr.SELECTED ) {
+
+			var intersects = ray.intersectObject( _attr.plane );
+			_attr.SELECTED.ewii3DWidget.grabAction();
+			_attr.SELECTED.position.copy( intersects[ 0 ].point.subSelf( _attr.offset ) );
+			
+			_attr.SELECTED.lookAt( new THREE.Vector3 (0,350,4200) );
+			_attr.plane.position.copy( _attr.SELECTED.position );
+			/*plane.lookAt( camera.position );
+			plane.rotation.x += Math.PI/2;*/
+			return;
 
 		}
-	});
-}
 
-/*
- *	this function adds the mousemove, mousedown and mouseup event listeners.
- *	also, it sets up a resize listener, in case the window size is changed.
- */
+		var intersects = ray.intersectObjects( _attr.objects );
+		if ( intersects.length > 0 ) {
 
-Ewii3D.prototype.setActions=function(){
-	this.renderer.domElement.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
-	this.renderer.domElement.addEventListener( 'mousedown', this.onDocumentMouseDown, false );
-	this.renderer.domElement.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
-	
-	window.addEventListener( 'resize', this.onWindowResize, false );
-}
+			if ( _attr.INTERSECTED != intersects[ 0 ].object ) {
 
-/*
- *	setEnv, loads 6 images, from the `envName` directory and puts them on a cube as
- *	a cubemap for the environment (sky).
- *
- *	it returns a THREE.Mesh object whose geometry is that cube.
- *
- */
+				//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
 
-Ewii3D.prototype.setEnv=function(envName){
-	var urlPrefix = "demo/"+envName+"/";
-	var urls = [ urlPrefix + "3.jpg", urlPrefix + "1.jpg",
-	urlPrefix + "5.jpg", urlPrefix + "6.jpg",
-	urlPrefix + "4.jpg", urlPrefix + "2.jpg" ];
-	var textureCube = THREE.ImageUtils.loadTextureCube( urls ); 
-	textureCube.format = THREE.RGBFormat;
-	
-	var shader = THREE.ShaderUtils.lib[ "cube" ];
-	shader.uniforms[ "tCube" ].texture = textureCube;
-	
-	var material = new THREE.ShaderMaterial( {
+				_attr.INTERSECTED = intersects[ 0 ].object;
+				//INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 
-	  fragmentShader: shader.fragmentShader,
-	  vertexShader: shader.vertexShader,
-	  uniforms: shader.uniforms,
-	  depthWrite: false
+				_attr.plane.position.copy( _attr.INTERSECTED.position );
+				/*plane.lookAt( camera.position );
+				plane.rotation.x += Math.PI/2;*/
+				
 
-	});
-	
-	// build the skybox Mesh
-	skyboxMesh =  new THREE.Mesh( new THREE.CubeGeometry( 10000, 10000, 10000 ), material );
-	skyboxMesh.flipSided = true;
-	
-	skyboxMesh.rotation.y=Math.PI;
-	skyboxMesh.castShadow=false;
-	
-	// add it to the scene
-	return skyboxMesh;
-}
+			}
 
-/*
- *	causes the scene to be rerendered according to the new width and height of the window.
- */
+			_attr.container.style.cursor = 'pointer';
 
-Ewii3D.prototype.onWindowResize=function() {
-
-	Ewii3D.getInstance().camera.aspect = window.innerWidth / window.innerHeight;
-	Ewii3D.getInstance().camera.updateProjectionMatrix();
-
-	Ewii3D.getInstance().renderer.setSize( window.innerWidth, window.innerHeight );
-	
-	for (o in Ewii3D.getInstance().objects)
-	{
-		console.log(Ewii3D.getInstance().objects[o]);
-		Ewii3D.getInstance().objects[o].ewii3DWidget.refresh();
-	}
-
-}
-
-/*
- *	event handler for mouse move events
- */
-
-Ewii3D.prototype.onDocumentMouseMove=function( event ) {
-
-	event.preventDefault();
-
-	Ewii3D.getInstance().mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	Ewii3D.getInstance().mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-	//
-
-	var vector = new THREE.Vector3( Ewii3D.getInstance().mouse.x, Ewii3D.getInstance().mouse.y, 0.5 );
-	Ewii3D.getInstance().projector.unprojectVector( vector, Ewii3D.getInstance().camera );
-
-	var ray = new THREE.Ray( Ewii3D.getInstance().camera.position, 
-				 vector.subSelf( Ewii3D.getInstance().camera.position ).normalize() );
-
-
-	if ( Ewii3D.getInstance().SELECTED ) {
-
-		var intersects = ray.intersectObject( Ewii3D.getInstance().plane );
-		Ewii3D.getInstance().SELECTED.ewii3DWidget.grabAction();
-		Ewii3D.getInstance().SELECTED.position.copy( intersects[ 0 ].point.subSelf( Ewii3D.getInstance().offset ) );
-		
-		Ewii3D.getInstance().SELECTED.lookAt( new THREE.Vector3 (0,350,4200) );
-		Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().SELECTED.position );
-		/*plane.lookAt( camera.position );
-		plane.rotation.x += Math.PI/2;*/
-		return;
-
-	}
-
-
-	var intersects = ray.intersectObjects( Ewii3D.getInstance().objects );
-
-	if ( intersects.length > 0 ) {
-
-		if ( Ewii3D.getInstance().INTERSECTED != intersects[ 0 ].object ) {
+		} else {
 
 			//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
 
-			Ewii3D.getInstance().INTERSECTED = intersects[ 0 ].object;
-			//INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+			_attr.INTERSECTED = null;
 
-			Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().INTERSECTED.position );
-			/*plane.lookAt( camera.position );
-			plane.rotation.x += Math.PI/2;*/
-			
+			_attr.container.style.cursor = 'auto';
 
 		}
 
-		Ewii3D.getInstance().container.style.cursor = 'pointer';
+	}
 
-	} else {
+	/*
+	 *	event handler for mouse down events
+	 */
 
-		//if ( INTERSECTED ) INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+	function onDocumentMouseDown( event ) {
 
-		Ewii3D.getInstance().INTERSECTED = null;
+		console.log("DOWN");
+		event.preventDefault();
 
-		Ewii3D.getInstance().container.style.cursor = 'auto';
+		var vector = new THREE.Vector3( _attr.mouse.x, _attr.mouse.y, 0.5 );
+		_attr.projector.unprojectVector( vector, _attr.camera );
+
+		var ray = new THREE.Ray( _attr.camera.position, vector.subSelf( _attr.camera.position ).normalize() );
+
+		var intersects = ray.intersectObjects( _attr.objects );
+
+		if ( intersects.length > 0 ) {
+
+	//					controls.enabled = false;
+
+			_attr.SELECTED = intersects[ 0 ].object;
+			_attr.SELECTED.ewii3DWidget.clickAction();
+
+			var intersects = ray.intersectObject( _attr.plane );
+			_attr.offset.copy( intersects[ 0 ].point ).subSelf( _attr.plane.position );
+
+			_attr.container.style.cursor = 'move';
+
+		}
 
 	}
 
-}
+	/*
+	 *	event handler for mouse up events
+	 */
 
-/*
- *	event handler for mouse down events
- */
+	function onDocumentMouseUp( event ) {
 
-Ewii3D.prototype.onDocumentMouseDown=function( event ) {
+		event.preventDefault();
 
-	console.log("DOWN");
-	event.preventDefault();
+		//controls.enabled = true;
 
-	var vector = new THREE.Vector3( Ewii3D.getInstance().mouse.x, Ewii3D.getInstance().mouse.y, 0.5 );
-	Ewii3D.getInstance().projector.unprojectVector( vector, Ewii3D.getInstance().camera );
+		if ( _attr.INTERSECTED ) {
 
-	var ray = new THREE.Ray( Ewii3D.getInstance().camera.position, vector.subSelf( Ewii3D.getInstance().camera.position ).normalize() );
+			_attr.plane.position.copy( _attr.INTERSECTED.position );
+			if (_attr.SELECTED)
+				_attr.SELECTED.ewii3DWidget.clickAction();
+			_attr.SELECTED = null;
 
-	var intersects = ray.intersectObjects( Ewii3D.getInstance().objects );
+		}
 
-	if ( intersects.length > 0 ) {
-
-//					controls.enabled = false;
-
-		Ewii3D.getInstance().SELECTED = intersects[ 0 ].object;
-		Ewii3D.getInstance().SELECTED.ewii3DWidget.clickAction();
-
-		var intersects = ray.intersectObject( Ewii3D.getInstance().plane );
-		Ewii3D.getInstance().offset.copy( intersects[ 0 ].point ).subSelf( Ewii3D.getInstance().plane.position );
-
-		Ewii3D.getInstance().container.style.cursor = 'move';
+		_attr.container.style.cursor = 'auto';
 
 	}
 
-}
+	/*
+	 *	adds some light objects to the scene, a spot light and a sun light.
+	 */
 
-/*
- *	event handler for mouse up events
- */
+	function addLights(){
+		
+		_attr.scene.add( new THREE.AmbientLight( 0x606060 ) );
+		
+		var light = new THREE.SpotLight( 0xffffff, 1 );
+		light.position.set( 0, 0, 2000 );
+		light.castShadow = true;
 
-Ewii3D.prototype.onDocumentMouseUp=function( event ) {
+		light.shadowCameraNear = 200;
+		light.shadowCameraFar = _attr.camera.far;
+		light.shadowCameraFov = 50;
 
-	event.preventDefault();
+		light.shadowBias = -0.00022;
+		light.shadowDarkness = 0.5;
 
-	//controls.enabled = true;
+		light.shadowMapWidth = 2048;
+		light.shadowMapHeight = 2048;
 
-	if ( Ewii3D.getInstance().INTERSECTED ) {
-
-		Ewii3D.getInstance().plane.position.copy( Ewii3D.getInstance().INTERSECTED.position );
-		if (Ewii3D.getInstance().SELECTED)
-			Ewii3D.getInstance().SELECTED.ewii3DWidget.clickAction();
-		Ewii3D.getInstance().SELECTED = null;
-
+		_attr.scene.add( light );
+		
+		var dirLight = new THREE.DirectionalLight( 0xffffff, 10 );
+		dirLight.position.set( 0, 0, 1000 ).normalize();
+		_attr.scene.add( dirLight );
 	}
 
-	Ewii3D.getInstance().container.style.cursor = 'auto';
+	/*
+	 *	sets up the renderer object and appends the domElement to the document.
+	 */
 
-}
+	function setRenderer(){
+		_attr.projector = new THREE.Projector();
 
-/*
- *	adds some light objects to the scene, a spot light and a sun light.
- */
+		_attr.renderer = new THREE.WebGLRenderer( { antialias: true } );
+		_attr.renderer.sortObjects = false;
+		_attr.renderer.setSize( window.innerWidth, window.innerHeight );
 
-Ewii3D.prototype.addLights=function(){
-	var light = new THREE.SpotLight( 0xffffff, 1 );
-	light.position.set( 0, 0, 2000 );
-	light.castShadow = true;
+		_attr.renderer.shadowMapEnabled = true;
+		_attr.renderer.shadowMapSoft = true;
 
-	light.shadowCameraNear = 200;
-	light.shadowCameraFar = this.camera.far;
-	light.shadowCameraFov = 50;
+		_attr.container.appendChild( _attr.renderer.domElement );
+	}
 
-	light.shadowBias = -0.00022;
-	light.shadowDarkness = 0.5;
+	/*
+	 *	adds a helper plane for detecting and manipulating widgets position.
+	 *	the plane is invisible.
+	 */
 
-	light.shadowMapWidth = 2048;
-	light.shadowMapHeight = 2048;
+	function setHelpers(){
+		_attr.plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
+		_attr.plane.visible = false;
+		_attr.plane.rotation.x = Math.PI/2;
+		_attr.scene.add( _attr.plane );
+	}
 
-	this.scene.add( light );
+	/*
+	 *	starts the animation loop.
+	 */
+
+	function animate() {
+
+		requestAnimationFrame( animate );
+		render();
+	}
+
+	/*
+	 *	renders the canvas only once.
+	 */
+
+	function render() {
+
+
+		_attr.renderer.render( _attr.scene, _attr.camera );
+
+	}
 	
-	var dirLight = new THREE.DirectionalLight( 0xffffff, 10 );
-	dirLight.position.set( 0, 0, 1000 ).normalize();
-	this.scene.add( dirLight );
-}
-
-/*
- *	sets up the renderer object and appends the domElement to the document.
- */
-
-Ewii3D.prototype.setRenderer=function(){
-	this.projector = new THREE.Projector();
-
-	this.renderer = new THREE.WebGLRenderer( { antialias: true } );
-	this.renderer.sortObjects = false;
-	this.renderer.setSize( window.innerWidth, window.innerHeight );
-
-	this.renderer.shadowMapEnabled = true;
-	this.renderer.shadowMapSoft = true;
-
-	this.container.appendChild( this.renderer.domElement );
-}
-
-/*
- *	adds a helper plane for detecting and manipulating widgets position.
- *	the plane is invisible.
- */
-
-Ewii3D.prototype.setHelpers = function(){
-	this.plane = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.25, transparent: true, wireframe: true } ) );
-	this.plane.visible = false;
-	this.plane.rotation.x = Math.PI/2;
-	this.scene.add( this.plane );
-}
-
-/*
- *	starts the animation loop.
- */
-
-Ewii3D.prototype.animate=function() {
-
-	requestAnimationFrame( Ewii3D.getInstance().animate );
-
-	Ewii3D.getInstance().render();
-
-}
-
-/*
- *	renders the canvas only once.
- */
-
-Ewii3D.prototype.render=function() {
+	return self;
+}(Ewii3D || {}));
 
 
-	Ewii3D.getInstance().renderer.render( Ewii3D.getInstance().scene, Ewii3D.getInstance().camera );
 
-}
 
 
 /*
@@ -414,7 +437,10 @@ Ewii3DWidget.prototype.properties={};
  * the 3D position of this widget
  */
 Ewii3DWidget.prototype.position={x:0,y:0,z:0};
-
+/*
+ * the Scale factor for this widget
+ */
+Ewii3DWidget.prototype.scale =1;
 /*
  * a reference to the 3D THREE.Mesh object 
  */
@@ -461,7 +487,7 @@ Ewii3DWidget.prototype.init = function(geo){
 	this.object.scale.z *= this.scale;
 
 
-	Ewii3D.getInstance().scene.add(this.object);
+	Ewii3D.addObjectToScene(this.object);
 	//Ewii3D.getInstance().objects.push(this.object);
 	console.log("OH HAI");
 	console.log(this);
@@ -510,7 +536,7 @@ Ewii3DWidget.prototype.load = function(){
 	var jsonLoader = new THREE.JSONLoader();
 	console.log(this.model);
 	var self = this;
-	jsonLoader.load( this.model, function( geometry ) { console.log (geometry); self.init(geometry);} );
+	jsonLoader.load( this.model, function( geometry ) { console.log("Model Loaded. Geo is:"); console.log (geometry); self.init(geometry);} );
 	
 
 }
@@ -550,7 +576,7 @@ Ewii3DGrabbableWidget.prototype = new Ewii3DWidget();
 
 Ewii3DGrabbableWidget.prototype.init = function(geometry){
 	Ewii3DWidget.prototype.init.call(this,geometry);
-	Ewii3D.getInstance().objects.push(this.object);
+	Ewii3D.setGrabbable(this.object);
 }
 
 
