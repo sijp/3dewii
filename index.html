@@ -9,9 +9,19 @@
 		<script src="base/jquery-ui/ui/jquery-ui.js"></script>
 		<script src="Three.js"></script>
 		<script src="base/base.js"></script>
-		<script src="widgets/facebook.js"></script>
+		<script src="base/widgets/Ewii3DWidget.js"></script>
+		<script src="base/widgets/Ewii3DGrabbableWidget.js"></script>
 		<script src="widgets/stream.js"></script>
 		<script src="widgets/dummy.js"></script>
+		<script>
+			/*
+			 *  upon document's readiness, start the setup and animation loop of Ewii3D
+			 */
+
+			jQuery(document).ready(function(){
+				Ewii3D.getInstance().loop();
+			});
+		</script>
 		
 		 <link rel="stylesheet" href="base/jquery-ui/themes/base/jquery-ui.css" />
 		
