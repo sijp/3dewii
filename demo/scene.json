@@ -2,9 +2,7 @@
 	"cubeProjection":"sunset",
 	"widgets":[
 		{
-			"name":"StreamWidget",
-			"position": {"x":0,"y":500,"z":50}
-			
+			"name":"StreamWidget"
 		},
 		{
 			"name":"DummyWidget",

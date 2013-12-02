@@ -1,137 +1,81 @@
-/*
- *  basic interface for the widgets. all widgets' prototypes must be an instance of this class.
- *  widgets that inherit for Ewii3DWidget will not be able to be grabbed or interacted at all,
- *  see Ewii3DGrabbableWidget for more info.
- */
 
-function Ewii3DWidget(){
-	this.id = Ewii3DWidget.prototype.id++;
-}
-
-/*
- * the 3d model used for this widget, default: undefined
- */
-Ewii3DWidget.prototype.model=undefined;
-/*
- * an object that stores the properties of this object
- */
-Ewii3DWidget.prototype.properties={};
-/*
- * the 3D position of this widget
- */
-Ewii3DWidget.prototype.position={x:0,y:0,z:0};
-/*
- * the Scale factor for this widget
- */
-Ewii3DWidget.prototype.scale =1;
-/*
- * a reference to the 3D THREE.Mesh object 
- */
-
-Ewii3DWidget.prototype.object=undefined;
-
-/*
- * a widget counter, used for assigning id's to widgets.
- */
-
-Ewii3DWidget.prototype.id = 0;
+Ewii3D = (function(self){
 
 
-/*
- *	This method should not be called externally.
- *	it recieves a geometry, from the load function (via ajax).
- *	then it sets up the this.object propery using that mesh and positions it in the scene.
- */
+	/*
+	 *  basic interface for the widgets. all widgets' prototypes must be an instance of this class.
+	 *  widgets that inherit for Ewii3DWidget will not be able to be grabbed or interacted at all,
+	 *  see Ewii3DGrabbableWidget for more info.
+	 */
 
-Ewii3DWidget.prototype.init = function(geo){
-	console.log("INITING WIDGET");
-	console.log(geo);
-	this.object=new THREE.Mesh( geo, new THREE.MeshFaceMaterial({shading:THREE.FlatShading}) );
+
+
+
+	function Widget(opts){
+	}
+
+	Widget.prototype.decorateMethods=function(settings){
+		var THIS=this;
+		methods = this.getDecoratedMethods();
+		for (m in methods){
+			(function(){
+				console.log("decorating "+methods[m]);
+				var methodName = methods[m];
+				THIS[methodName] = function(){
+					console.log(methodName+" called!");
+					modifiedArgs = Array.prototype.slice.call(arguments);
+					modifiedArgs.push(settings);
+					console.log(modifiedArgs);
+					return (Object.getPrototypeOf(THIS))[methodName].apply(Object.getPrototypeOf(THIS),modifiedArgs);
+				}
+			}());
+		}
+	};
+
+	Widget.prototype.getDecoratedMethods = function(){
+		return ["init","refresh","clickAction","grabAction"];
+	};
+
+
+	Widget.prototype.init=function(geo,settings){
+		settings.object = new THREE.Mesh( geo, new THREE.MeshFaceMaterial({shading:THREE.FlatShading}) );
+
+		settings.object.geometry.dynamic = true;
+		settings.object.castShadow = true;
+		settings.object.receiveShadow = true;
+
+		settings.object.ewii3DWidget = settings.widget;
+		
+		settings.object.position.x = settings.position.x;
+		settings.object.position.y = settings.position.y;
+		settings.object.position.z = settings.position.z;
+		
+		settings.object.scale.x *= settings.scale;
+		settings.object.scale.y *= settings.scale;
+		settings.object.scale.z *= settings.scale;
+		self.addObjectToScene(settings.object);
+	};
 	
-	this.object.geometry.dynamic = true;
-	this.object.castShadow = true;
-	this.object.receiveShadow = true;
-	
-	this.object.ewii3D={
-			click:this.clickAction,
-			grab:this.grabAction
-		};
+	/*
+	 *  actions to be taken once a click (mouse up) is made.
+	 */
+	Widget.prototype.clickAction = function(settings){
+	};
 
-	
-	this.object.ewii3DWidget=this;
-	
-	
-	this.object.position.x = this.position.x;
-	this.object.position.y = this.position.y;
-	this.object.position.z = this.position.z;
-	
-	this.object.scale.x *= this.scale;
-	this.object.scale.y *= this.scale;
-	this.object.scale.z *= this.scale;
+	/*
+	 *  actions to be taken once a grab (mouse down+move) is made.
+	 */
+
+	Widget.prototype.grabAction = function(settings){
+	};
 
 
-	Ewii3D.addObjectToScene(this.object);
-	//Ewii3D.getInstance().objects.push(this.object);
-	console.log("OH HAI");
-	console.log(this);
-}
+	Widget.prototype.refresh=function(settings){
+		return;
+	};
 
-/*
- *  changes the position of the widget.
- */
+	self.Widget = Widget;
 
-Ewii3DWidget.prototype.setPosition = function (x,y,z){
+	return self;
+}(Ewii3D || {}));
 
-	this.position={x:x,y:y,z:z};
-}
-
-/*
- *  changes the scale factor of the widget.
- */
-
-Ewii3DWidget.prototype.setScale = function (s){
-
-	this.scale=s;
-}
-
-/*
- *  actions to be taken once a click (mouse up) is made.
- */
-
-
-Ewii3DWidget.prototype.clickAction = function(){
-}
-
-/*
- *  actions to be taken once a grab (mouse down+move) is made.
- */
-
-Ewii3DWidget.prototype.grabAction = function(){
-}
-
-
-/*
- *  loads the proper JSON using the model property. model must be set before this call
- *  in the child widgets.
- */
-
-Ewii3DWidget.prototype.load = function(){
-	var jsonLoader = new THREE.JSONLoader();
-	console.log(this.model);
-	var self = this;
-	jsonLoader.load( this.model, function( geometry ) { console.log("Model Loaded. Geo is:"); console.log (geometry); self.init(geometry);} );
-	
-
-}
-
-/*
- *  sets this.model to be `model`
- */
-
-Ewii3DWidget.prototype.setModel = function (model){
-	this.model = model;
-}
-
-
-Ewii3DWidget.prototype.refresh=function(){
-}

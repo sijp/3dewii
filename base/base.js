@@ -70,9 +70,6 @@ var Ewii3D = (function (self){
 		console.log("adding object to scene:");
 		console.log(obj);
 		_attr.scene.add(obj);
-		god=new THREE.Mesh( new THREE.CubeGeometry( 1000, 1000, 1000 ));
-		god.position = obj.position;
-		_attr.scene.add( god );
 	}
 
 	self.setGrabbable = function(obj){
@@ -81,6 +78,77 @@ var Ewii3D = (function (self){
 
 	self.toScreenXY = function(position){
 		return toScreenXY(position,_attr.camera,_attr.renderer.domElement);
+	}
+
+
+	self.getWidgetGenerator=function(opts){
+		if (opts.name in self){
+			return self[opts.name];
+		}
+		return null;
+	};
+
+	self.getModelName = function(opts){
+		var gen;
+
+		if (opts.model!==undefined){
+			return opts.model;
+		}
+		
+		gen = self.getWidgetGenerator(opts);
+		console.log("GEN:");
+		console.log(gen);
+		if ("getModel" in gen && gen["getModel"] instanceof Function)
+			return gen.getModel();
+		return DEFAULT_MODEL;
+	};
+
+	self.createWidget=function(opts){
+		var widgetGen = self.getWidgetGenerator(opts);
+		return widgetGen!==null? widget(widgetGen,opts):null;
+	};
+
+	self.augmentWidget=function(base){
+		var target = function(){};
+		target.prototype = Object.create(base.prototype);
+		return target;
+	}
+
+	self.loadWidget=function(opts){
+		var jsonLoader = new THREE.JSONLoader();
+		var widget = self.createWidget(opts);
+		if (widget===null)
+			return false;
+		
+		jsonLoader.load(self.getModelName(opts), 
+				function( geometry ) { 
+					widget.init(geometry)
+				} );
+		return true;
+
+	};
+
+	var defaults = {model : undefined,
+			scale : 1,
+			position : {x:0,y:0,z:0},
+			id : 0,
+			object : undefined};
+
+	var DEFAULT_MODEL = "defaultcube.js";
+	var widgetCounter=0;
+
+	function widget(widgetCtor,opts){
+
+		var settings = $.extend(true,			//deep copy
+					{},
+					defaults,
+					opts);
+		settings.id = widgetCounter++;
+		var wdgt = Object.create(widgetCtor.prototype);
+		wdgt.decorateMethods(settings);
+		settings.widget=wdgt;
+
+		return wdgt;
 	}
 
 	/*
@@ -108,23 +176,8 @@ var Ewii3D = (function (self){
 	function sceneLoadedCallback(data){
 		_attr.scene.add(setEnv(data.cubeProjection));
 		
-		for (i=0;i<data.widgets.length;i++)
-		{
-			new function() {
-				widget = new window[data.widgets[i].name];
-				console.log(data.widgets[i])	
-				if (data.widgets[i].model!==undefined)
-					widget.setModel(data.widgets[i].model);
-				if (data.widgets[i].position!==undefined)	
-				{
-					position = data.widgets[i].position;
-					widget.setPosition(position.x,position.y,position.z);
-				}
-				if (data.widgets[i].scale!==undefined)
-					widget.setScale(data.widgets[i].scale);
-
-				widget.load();
-			};
+		for (i=0;i<data.widgets.length;i++){
+			self.loadWidget(data.widgets[i]);
 		}
 	}
 
