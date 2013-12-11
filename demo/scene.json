@@ -5,11 +5,11 @@
 			"name":"StreamWidget"
 		},
 		{
-			"name":"DummyWidget",
-			"model":"spaceship.js",
-			"position": {"x":0,"y":400,"z":50},
-			"scale":100
-			
+			"name":"GalleryWidget",
+			"position":{
+				"x":100,
+				"y":100
+				}
 		}
 	]
 }

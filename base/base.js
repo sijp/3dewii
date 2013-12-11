@@ -128,6 +128,13 @@ var Ewii3D = (function (self){
 
 	};
 
+	self.setXYZ=function(attr,x,y,z){
+		attr.x=x;
+		attr.y=y;
+		attr.z=z;
+	};
+
+
 	var defaults = {model : undefined,
 			scale : 1,
 			position : {x:0,y:0,z:0},
