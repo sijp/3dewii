@@ -26,11 +26,6 @@ function toScreenXY(position, camera, canvas) {
  * Before anything can be done, the main render loop should be called by Ewii3D.getInstance().loop();
  */
 var Ewii3D = (function (self){
-
-    //deprecated
-    self.getInstance = function() {
-        return self;
-    }
     
     var _attr = {
         container:null,
@@ -83,7 +78,6 @@ var Ewii3D = (function (self){
      * returns an object that can generate Widgets.
      * the object must have the Widget object as a prototype
      */
-     
     self.getWidgetGenerator = function(opts){
         if (opts.name in self){
             return self[opts.name];
@@ -176,7 +170,7 @@ var Ewii3D = (function (self){
                     opts);
         settings.id = widgetCounter++;
         var wdgt = Object.create(widgetCtor.prototype);
-        wdgt.decorateMethods(settings);
+        wdgt._decorateMethods(settings);
         settings.widget = wdgt;
 
         return wdgt;

@@ -8,9 +8,9 @@ Ewii3D = (function(self){
     function Widget(opts){
     }
 
-    Widget.prototype.decorateMethods=function(settings){
+    Widget.prototype._decorateMethods=function(settings){
         var THIS=this;
-        methods = this.getDecoratedMethods();
+        methods = this._getDecoratedMethods();
         for (m in methods){
             (function(){
                 var methodName = methods[m];
@@ -23,8 +23,18 @@ Ewii3D = (function(self){
         }
     };
 
-    Widget.prototype.getDecoratedMethods = function(){
-        return ["init","refresh","clickAction","grabAction"];
+    Widget.prototype._getDecoratedMethods = function(){
+        var methods = [];
+        var m;
+        for (m in this){
+            if (this[m] instanceof Function){
+                if (m[0] !== '_'){
+                    methods.push(m);
+                }
+            }
+        }
+    
+        return methods;
     };
 
     Widget.prototype.init=function(geo,settings){

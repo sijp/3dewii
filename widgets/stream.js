@@ -12,13 +12,13 @@ Ewii3D = (function(self){
      */
     var StreamWidget = self.augmentWidget(self.GrabbableWidget);
 
-    StreamWidget.prototype.getDecoratedMethods=function(){
+    /*StreamWidget.prototype.getDecoratedMethods=function(){
         //var methList = Object.getPrototypeOf(this).getDecoratedMethods.call(Object.getPrototypeOf(this)); //super call
         var methList = self.superCall(this,'getDecoratedMethods');
         methList.push("startLongPolling");
 
         return methList;
-    };
+    };*/
     
     StreamWidget.prototype.init = function(geometry,settings){
         Object.getPrototypeOf(this).init.call(Object.getPrototypeOf(this),geometry,settings);
